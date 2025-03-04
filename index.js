@@ -32,13 +32,11 @@ app.post("/add-book", (req, res) => {
   return res.send({ success: true });
 });
 
-app.get("/find-by-isbn-author", (req, res) => {
-  const { isbn, author } = req.query;
-
+function get_books() {
   const books = fs.readFileSync("books.txt").toString();
-  const booksObject = books
-    .split("\n")
-    .slice(0, -1)
+  return books
+    .split("\n") // split by lines
+    .slice(0, -1) // remove blank from after the last newline
     .map((x) => {
       const [bookName, isbn, author, year] = x.split(",");
       return {
@@ -48,42 +46,18 @@ app.get("/find-by-isbn-author", (req, res) => {
         yearPublished: +year,
       };
     });
+}
 
-  for (let i = 0; i < booksObject.length; i++) {
-    const { bookName, isbn, author, yearPublished } = booksObject[i];
-    if (isbn == req.query.isbn && author == req.query.author) {
-      return res.send(booksObject[i]);
-    }
-  }
-
-  return res.send({});
+app.get("/find-by-isbn-author", (req, res) => {
+  const { isbn, author } = req.query;
+  const books = get_books();
+  return res.send(books.find((book) => book.isbn == isbn && book.author == author));
 });
 
 app.get("/find-by-author", (req, res) => {
   const { author } = req.query;
-
-  const books = fs.readFileSync("books.txt").toString();
-  const booksObject = books
-    .split("\n")
-    .slice(0, -1)
-    .map((x) => {
-      const [bookName, isbn, author, year] = x.split(",");
-      return {
-        bookName,
-        isbn,
-        author,
-        yearPublished: +year,
-      };
-    });
-
-  for (let i = 0; i < booksObject.length; i++) {
-    const { bookName, isbn, author, yearPublished } = booksObject[i];
-    if (author == req.query.author) {
-      return res.send(booksObject[i]);
-    }
-  }
-
-  return res.send({});
+  const books = get_books();
+  return res.send(books.filter((x) => x.author == author));
 });
 
 app.listen(3000, () => {
