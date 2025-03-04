@@ -7,20 +7,22 @@ app.use(express.urlencoded({ extended: false }));
 
 app.post("/add-book", (req, res) => {
   const { bookName, isbn, author, yearPublished } = req.body;
+  let hasBook = false;
+  try {
+    const books = get_books();
+    hasBook = books.find(book => book.isbn == isbn) != undefined // if isbn already exists
+  } catch (e) {
+  }
 
   if (
-    typeof bookName != "string" ||
     bookName == undefined ||
     bookName == "" ||
-    typeof isbn != "string" ||
     isbn == undefined ||
     isbn == "" ||
-    typeof author != "string" ||
     author == undefined ||
     author == "" ||
-    typeof yearPublished != "string" ||
     yearPublished == undefined ||
-    yearPublished == ""
+    yearPublished == "" || hasBook
   ) {
     return res.send({ success: false });
   }
